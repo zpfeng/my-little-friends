@@ -5,11 +5,7 @@
 ##################################################################
 shopt -s checkwinsize
 PROMPT_COMMAND='echo -ne "\033]0;${USER-${USERNAME}}@${HOSTNAME}: ${PWD/$HOME/~}\007"'
-if [ -e /usr/share/terminfo/x/xterm-256color ]; then
-  export TERM='xterm-256color'
-else
-  export TERM='xterm-color'
-fi
+export TERM=xterm
 
 ##################################################################
 # prompt
@@ -59,23 +55,26 @@ alias .....='cd ../../../..'
 alias ....='cd ../../..'
 alias ...='cd ../..'
 alias ..='cd ..'
+alias al="tail -f /opt/tomcat-engine1/logs/access.$(date --iso).log | egrep -v '(indexer|lock|changelog)'"
 alias cal='LC_ALL=zh_TW.UTF-8 cal'
 alias cd='cd -P'
 alias clipit='clipit &> /dev/null'
 alias de='setxkbmap de'
 alias df='df -hT -x tmpfs -x devtmpfs'
 alias diff=colordiff
-alias e='emacsclient --no-wait'
+alias e='emacsclient -nw --alternate-editor=""'
 alias el='tail -f /var/log/escenic/engine1{.out,-messages,-catalina.out,-tomcat}'
-alias al="tail -f /opt/tomcat-engine1/logs/access.$(date --iso).log | egrep -v '(indexer|lock|changelog)'"
 alias emacs='emacs -fn terminus-bold-14'
 alias err="egrep --color -w 'ERROR|SEVERE|WARN|Exception'"
 alias eternal='cat ~/.bash_eternal_history | grep'
+alias fjm='find-jar ~/.m2/repository'
+alias fjt='find-jar /opt/tomcat-engine1'
 alias ga='git add'
 alias gb='git branch'
 alias gbud='git branch --set-upstream-to=origin/develop develop'
 alias gc='git checkout'
 alias gca='git commit --amend'
+alias gcaf='git commit -a --fixup'
 alias gcp='git cherry-pick'
 alias gd='git diff --word-diff=color'
 alias gdn='git --no-pager diff'
@@ -113,6 +112,11 @@ alias vi=vim
 alias what-is-my-public-ip="curl -s checkip.dyndns.org | sed 's/.*<body>.*: \(.*\)<\/body>.*/\1/'"
 alias x='xml_pp'
 
+# If we're on OpenBSD, redefine some aliases
+if [[ $(uname -s) == OpenBSD ]]; then
+  alias ls='gls -ltrh --color'
+  alias grep='grep --text --ignore-case'
+fi
 ##################################################################
 ## Command for switchong to a simple prompt I always use this in Emacs
 ## shells, so I set the EDITOR variable to emacsclient as well.
@@ -191,8 +195,8 @@ export EDITOR=vim
 # language & time zone
 ##################################################################
 # export TZ='Asia/Taipei'
-export LANG=en_GB.utf8
-export LC_ALL=en_GB.utf8
+export LANG=en_GB.UTF-8
+export LC_ALL=en_GB.UTF-8
 
 ##################################################################
 # shell check

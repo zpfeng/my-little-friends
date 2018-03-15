@@ -31,7 +31,7 @@
       ;; care of this
       mu4e-sent-messages-behavior 'trash
 
-      mu4e-view-show-images t
+      mu4e-view-show-images nil
 
       ;; Easier to read HTML email in dark themes
       shr-color-visible-luminance-min 80
@@ -47,7 +47,11 @@
 
       ;; common SMTP settings for all accounts
       message-send-mail-function 'smtpmail-send-it
-      )
+
+      ;; Make GPG work with emacs daemon (by default, Emacs will
+      ;; attempt and fail to connect to the GPG agent and then fail
+      ;; the GPG alltogether.
+      epa-pinentry-mode 'loopback)
 
 ;; Navigate links in rich text email by Tab/Shift + Tab
 (add-hook 'mu4e-view-mode-hook

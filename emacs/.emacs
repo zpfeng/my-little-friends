@@ -11,34 +11,49 @@
 (package-initialize)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Load path
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Add ELPA packages to the load path
+(let ((default-directory "~/.emacs.d/elpa"))
+  (normal-top-level-add-subdirs-to-load-path))
+
+(eval-when-compile
+  (require 'use-package))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Appearance
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (menu-bar-mode 0)
 
-(when window-system
+(defun tkj-load-graphical-settings()
+  (interactive)
   ;; Themes
   (add-to-list 'custom-theme-load-path "$HOME/.emacs.d/themes")
   (load-theme 'monokai)
 
   (if (eq system-type 'gnu/linux)
       (progn
-	;; Favourite fonts: Source Code Pro, Terminus
-	(set-face-attribute 'default nil
-			    :family "Source Code Pro"
-			    :height 100
-			    :weight 'normal
-			    :width 'normal)
-	;; Edit server needed for editing text areas in Chrome browsers
-	(edit-server-start)
-	))
-
+        ;; Favourite fonts: Source Code Pro, Terminus
+        (set-face-attribute 'default nil
+                            :family "Source Code Pro"
+                            :height 100
+                            :weight 'normal
+                            :width 'normal)))
   (set-cursor-color "red")
   (set-scroll-bar-mode nil)
   (setq-default cursor-type 'box)
   (tool-bar-mode 0)
-  (set-fringe-style 0)
+  (set-fringe-style 0))
 
-  )
+(when window-system
+  (tkj-load-graphical-settings))
+
+;; Edit server needed for editing text areas in Chrome browsers
+(when (locate-library "edit-server")
+  (require 'edit-server)
+  (setq edit-server-new-frame nil)
+  (edit-server-start))
 
 (setq frame-background-mode nil
       column-number-mode t
@@ -50,35 +65,29 @@
       ring-bell-function (lambda nil (message "")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Improve Emacs' internal garbage collection
+;; Minibuffer
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun my-minibuffer-setup-hook ()
-  (setq gc-cons-threshold most-positive-fixnum))
-
-(defun my-minibuffer-exit-hook ()
-  (setq gc-cons-threshold 800000))
-
-(add-hook 'minibuffer-setup-hook #'my-minibuffer-setup-hook)
-(add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook)
+(load "~/.emacs.d/tkj-minibuffer.el")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remove uninteresting information from the mode line
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'diminish)
-(diminish 'abbrev-mode)
-(diminish 'auto-fill-function)
-(diminish 'auto-revert-mode)
-(diminish 'auto-revert-mode)
-(diminish 'command-log-mode)
-(diminish 'company-mode)
-(diminish 'company-search-mode)
-(diminish 'compilation-minor-mode)
-(diminish 'eclim-mode)
-(diminish 'flyspell-mode)
-(diminish 'git-gutter+-mode)
-(diminish 'visual-line-mode)
-(diminish 'ws-butler-mode)
-(diminish 'yas-minor-mode)
+(use-package diminish
+  :config
+  (diminish 'abbrev-mode)
+  (diminish 'auto-fill-function)
+  (diminish 'auto-revert-mode)
+  (diminish 'auto-revert-mode)
+  (diminish 'command-log-mode)
+  (diminish 'company-mode)
+  (diminish 'company-search-mode)
+  (diminish 'compilation-minor-mode)
+  (diminish 'eclim-mode)
+  (diminish 'flyspell-mode)
+  (diminish 'git-gutter+-mode)
+  (diminish 'visual-line-mode)
+  (diminish 'ws-butler-mode)
+  (diminish 'yas-minor-mode))
 
 (defun tkj-presentation-mode()
   (interactive)
@@ -95,7 +104,7 @@
 (show-paren-mode t)
 (setq show-paren-style 'expression)
 
-(require 'paren)
+(use-package paren)
 (set-face-background 'show-paren-match (face-background 'default))
 (set-face-attribute 'show-paren-match nil :weight 'extra-bold)
 
@@ -149,20 +158,35 @@
 (global-set-key "\C-\M-f" 'find-file-at-point)
 (global-set-key "\C-cn" 'find-dired)
 (global-set-key "\C-cN" 'grep-find)
+
+(use-package grep)
 (setq grep-find-ignored-directories
-      (list
-       ".git"
-       ".hg"
-       ".idea"
-       ".project"
-       ".settings"
-       ".svn"
-       "bootstrap*"
-       "pyenv"
-       "target"
-       )
-      grep-find-ignored-files (list "TAGS")
-      grep-find-command
+      (append
+       (list
+        ".git"
+        ".hg"
+        ".idea"
+        ".project"
+        ".settings"
+        ".svn"
+        "bootstrap*"
+        "pyenv"
+        "target"
+        )
+       grep-find-ignored-directories))
+
+(setq grep-find-ignored-files
+      (append
+       (list
+        "*.blob"
+        "*.xd"
+        "TAGS"
+        "dependency-reduced-pom.xml"
+        "workbench.xmi"
+        )
+       grep-find-ignored-files))
+
+(setq grep-find-command
       "find ~/src/content-engine -name \"*.java\" | xargs grep -n -i -e ")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -199,7 +223,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tag lookup/auto completion based on GNU Global
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'gtags)
+(use-package gtags)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Pure text settings
@@ -223,17 +247,6 @@
 (defun tkj-insert-down-arrow()
   (interactive)
   (insert "↓"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Loading other general init files
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; load all locally installed packages
-(let ((default-directory "/usr/local/src/emacs"))
-  (normal-top-level-add-subdirs-to-load-path))
-
-;; Add ELPA packages and emacs-eclim to the load path
-(let ((default-directory "~/.emacs.d/elpa"))
-  (normal-top-level-add-subdirs-to-load-path))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Emacs package repositories
@@ -282,28 +295,15 @@
 (setq revert-without-query (list "\\.png$" "\\.svg$")
       auto-revert-verbose nil)
 
-(defun rename-this-buffer-and-file ()
-  "Renames current buffer and file it is visiting."
-  (interactive)
-  (let ((filename (buffer-file-name)))
-    (if (not (and filename (file-exists-p filename)))
-        (message "Buffer is not visiting a file!")
-      (let ((new-name (read-file-name "New name: " filename)))
-        (cond
-         ((vc-backend filename) (vc-rename-file filename new-name))
-         (t
-          (rename-file filename new-name t)
-          (rename-buffer new-name)
-          (set-visited-file-name new-name)
-          (set-buffer-modified-p nil)
-          (message "File '%s' successfully renamed to '%s'" filename (file-name-nondirectory new-name))))))))
-
-(global-set-key (kbd "C-x C-r") 'rename-this-buffer-and-file)
+;; Give visual hint where the cursor is when switching buffers.
+(use-package beacon
+  :config
+  (beacon-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Minibuffer
+;; Compile buffer
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(add-hook 'minibuffer-setup-hook 'subword-mode)
+(load "~/.emacs.d/tkj-compile.el")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Editing VC log messages
@@ -313,15 +313,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Multiple, real time replace
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'multiple-cursors)
+(use-package multiple-cursors)
 (global-set-key (kbd "C->") 'mc/mark-next-like-this)
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 (global-set-key (kbd "C-c C->") 'mc/mark-all-like-this-dwim)
 (global-set-key (kbd "C-c C-'") 'mc/mark-all-like-this-in-defun)
 
-(require 'expand-region)
-(global-set-key (kbd "C-=") 'er/expand-region)
+(use-package expand-region
+  :bind
+  ("C-=" . 'er/expand-region))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Buffers
@@ -340,11 +341,12 @@
   (mapc 'kill-buffer (buffer-list)))
 
 ;; buffer names and mini buffer
-(require 'uniquify)
-(setq uniquify-buffer-name-style 'forward
-      uniquify-separator ":"
-      uniquify-strip-common-suffix nil
-      read-file-name-completion-ignore-case t)
+(use-package uniquify
+  :init
+  (setq uniquify-buffer-name-style 'forward
+        uniquify-separator ":"
+        uniquify-strip-common-suffix nil
+        read-file-name-completion-ignore-case t))
 
 ;; Auto scroll the compilation window
 (setq compilation-scroll-output t)
@@ -352,10 +354,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'helm-swoop)
+(use-package helm-swoop
+  :bind
+  ("M-n" . helm-swoop))
+
+(use-package helm-projectile
+  :bind
+  ("C-'" . helm-projectile-grep))
+
 (global-set-key (kbd "C-s") 'isearch-forward)
-(global-set-key (kbd "M-n") 'helm-swoop)
-(global-set-key (kbd "C-'") 'helm-projectile-grep)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mail & news
@@ -369,16 +376,9 @@
 (display-time)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Tell emacs to skip backup files
+;; Reading & writing files
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq make-backup-files nil)
-(setq backup-by-copying-when-mismatch t
-      backup-by-copying-when-linked t)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Yes, I want large files
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq large-file-warning-threshold 150000000)
+(load "~/.emacs.d/tkj-files.el")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Auto complete
@@ -386,7 +386,7 @@
 (global-company-mode 1)
 (company-quickhelp-mode 1)
 (global-set-key (kbd "<C-return>") 'company-complete)
-(require 'company-emoji)
+(use-package company-emoji)
 (add-to-list 'company-backends 'company-emoji)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -411,6 +411,7 @@
          ("config" . conf-mode)
          ("\\.cpp\\'" . c++-mode)
          ("\\.css\\'" . css-mode)
+         ("Dockerfile" . dockerfile-mode)
          ("\\.diff\\'" . diff-mode)
          ("\\.dtd\\'" . sgml-mode)
          ("\\.ebk\\'" . nxml-mode)
@@ -561,14 +562,6 @@
     (fill-region (region-beginning) (region-end) nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; I often want to explicitly load big Emacs modules to minimize the
-;; start up time
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun tkj-load-jdibug ()
-  (interactive)
-  (load "~/.emacs.d/tkj-jdibug.el"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Auto insert file templates
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (load "~/.emacs.d/tkj-auto-insert.el")
@@ -608,9 +601,9 @@
 (load "~/.emacs.d/tkj-time.el")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Various packaegs & settings to get smart file name completion
+;; Various packages & settings to get smart file name completion
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(load "~/.emacs.d/tkj-smart-file-name-completion.el")
+(load "~/.emacs.d/tkj-navigation.el")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Chat
@@ -618,13 +611,6 @@
 (defun tkj-load-chat()
   (interactive)
   (load "~/.emacs.d/tkj-chat.el"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Blockdiag
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun tkj-load-blockdiag()
-  (interactive)
-  (load "~/src/emacsfiles/blockdiag-mode.el"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Python

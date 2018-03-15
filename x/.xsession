@@ -3,7 +3,15 @@
 ## Torstein's .xinitrc/.xsession
 
 ## load x settings
-xrdb $HOME/.Xresources
+x_resources="
+  $HOME/.Xresources
+  $HOME/src/my-little-friends/x/x-tango-theme
+"
+for x in ${x_resources}; do
+  if [ -r "${x}" ]; then
+    xrdb -merge "${x}"
+  fi
+done
 
 ## remap keyboard
 if [ -r "$HOME/.xmodmaprc" ]; then
@@ -28,9 +36,18 @@ fi
 clipit &> /dev/null &
 conky &
 firefox &> /dev/null &
-emacs -fn 7x14 -g 80x60 &> /dev/null &
+emacsclient \
+  --create-frame \
+  --alternate-editor="" \
+  &> /dev/null &
 mpd ~/.mpdconf &> /dev/null &
 gnome-terminal &> /dev/null &
+/opt/google/chrome/google-chrome \
+  --profile-directory=Default \
+  --app-id=bikioccmkafdpakkkcpdbppfkghcmihk &
+/opt/google/chrome/google-chrome \
+  --profile-directory=Default \
+  --app-id=filhcaihcfanbgghhefcjhiccijdjbbd &
 
 ## set encoding before window manager starts
 export LC_ALL=en_GB.utf8
@@ -42,4 +59,4 @@ exec /usr/local/bin/fluxbox -log ~/.fluxbox/log
 # exec gnome-session
 # exec cinnamon-session
 # exec startkde
-
+# exec openbox

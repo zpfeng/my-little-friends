@@ -1,37 +1,30 @@
-## Torstein's Fluxbox apps file, hand written 😉
+## Torstein's Fluxbox apps file, hand written 😉 in Emacs using -*- conf -*- mode
 ##
 ## $ grep workspaceNames ~/.fluxbox/init | cut -d: -f2
 ##
-## music, talk, web, emacs, files, music2, talk2, web2, emacs2, files2,
-
-## music
-[app] (name=amarok) (class=Amarok)
-  [Workspace]	{0}
-  [Position]    (CENTER) {0 0}
-  [Maximized]	{vert}
-[end]
-[app] (name=vlc) (class=Vlc)
-  [Workspace]	{0}
-[end]
-[app] (name=spotify) (class=Spotify)
-  [Workspace]	{0}
-[end]
+## 4x2 grid:
+##
+## ----------------------------------------------
+## | 4: talk2 | 5: web2 | 6: emacs2 | 7: files2 |
+## ----------------------------------------------
+## | 0: talk  | 1: web  |  2: emacs | 3: files  |
+## ----------------------------------------------
 
 ## talk
 # using Google Chrome for video conferencing
 [app] (name=google-chrome-stable)
-  [Workspace]	{1}
+  [Workspace]	{0}
   [Deco]        {NONE}
 [end]
 [app] (name=google-chrome)
-  [Workspace]	{1}
+  [Workspace]	{0}
   [Deco]        {NONE}
 [end]
 [app] (name=skype) (class=Skype)
-  [Workspace]	{1}
+  [Workspace]	{0}
 [end]
 [app] (name=skype) (class=Skype)
-  [Workspace]	{1}
+  [Workspace]	{0}
 [end]
 [group]
  [app] (name=skype) (class=Skype)
@@ -39,47 +32,55 @@
 [end]
 
 ## web
-[app] (class=Firefox)
-  [Workspace]	{2}
+[app] (title=Firefox)
+  [Workspace]	{1}
+[end]
+[app] (class=Firefox Developer Edition)
+  [Workspace]	{1}
 [end]
 [app] (class=Firefox-esr)
-  [Workspace]	{2}
+  [Workspace]	{1}
+[end]
+[app] (class=Vivaldi-snapshot)
+  [Workspace]	{1}
+[end]
+[app] (class=Vivaldi-stable)
+  [Workspace]	{1}
 [end]
 
 ## emacs
 [app] (class=Emacs)
-  [Workspace]	{3}
+  [Workspace]	{2}
   [Position]    (CENTER) {0 0}
   [Deco]        {NONE}
   [Maximized]   {yes}
 [end]
 
 ## talk2
+[app] (class=Gnome-terminal)
+  [Workspace] {4}
+  [Position]    (CENTER) {0 0}
+[end]
+
 [app] (title=Signal)
-  [Workspace] {6}
+  [Workspace] {4}
   [Position]    (CENTER) {0 0}
 [end]
 
 ## web2
-[app] (class=Vivaldi-snapshot)
-  [Workspace]	{2}
-[end]
-[app] (class=Vivaldi-stable)
-  [Workspace]	{2}
-[end]
 [app] (name=opera) (class=Opera) (role=browser)
-  [Workspace]	{7}
+  [Workspace]	{5}
 [end]
 
 ## emacs2
 [app] (name=Eclipse) (class=Eclipse)
-  [Workspace]	{8}
+  [Workspace]	{6}
 [end]
 [app] (class=jetbrains-idea-ce)
-  [Workspace]	{8}
+  [Workspace]	{6}
 [end]
 [app] (name=xterm) (class=XTerm)
-  [Workspace]	{8}
+  [Workspace]	{6}
 [end]
 
 ## any workspace
