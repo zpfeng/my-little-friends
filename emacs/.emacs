@@ -11,8 +11,11 @@
 (package-initialize)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Load path
+;; Emacs package repositories
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq package-archives '(("melpa" . "http://melpa.org/packages/")
+                         ("gnu" . "http://elpa.gnu.org/packages/")
+                         ("marmalade" . "http://marmalade-repo.org/packages/")))
 
 ;; Add ELPA packages to the load path
 (let ((default-directory "~/.emacs.d/elpa"))
@@ -30,7 +33,7 @@
   (interactive)
   ;; Themes
   (add-to-list 'custom-theme-load-path "$HOME/.emacs.d/themes")
-  (load-theme 'monokai)
+  (load-theme 'deeper-blue)
 
   (if (eq system-type 'gnu/linux)
       (progn
@@ -48,6 +51,15 @@
 
 (when window-system
   (tkj-load-graphical-settings))
+
+(defun tkj-presentation-mode()
+  (interactive)
+  (when window-system
+    (set-face-attribute 'default nil
+                        :family "Source Code Pro"
+                        :height 170
+                        :weight 'normal
+                        :width 'normal)))
 
 ;; Edit server needed for editing text areas in Chrome browsers
 (when (locate-library "edit-server")
@@ -70,33 +82,9 @@
 (load "~/.emacs.d/tkj-minibuffer.el")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Remove uninteresting information from the mode line
+;; Mode line settings
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package diminish
-  :config
-  (diminish 'abbrev-mode)
-  (diminish 'auto-fill-function)
-  (diminish 'auto-revert-mode)
-  (diminish 'auto-revert-mode)
-  (diminish 'command-log-mode)
-  (diminish 'company-mode)
-  (diminish 'company-search-mode)
-  (diminish 'compilation-minor-mode)
-  (diminish 'eclim-mode)
-  (diminish 'flyspell-mode)
-  (diminish 'git-gutter+-mode)
-  (diminish 'visual-line-mode)
-  (diminish 'ws-butler-mode)
-  (diminish 'yas-minor-mode))
-
-(defun tkj-presentation-mode()
-  (interactive)
-  (when window-system
-    (set-face-attribute 'default nil
-                        :family "Source Code Pro"
-                        :height 170
-                        :weight 'normal
-                        :width 'normal)))
+(load "~/.emacs.d/tkj-mode-line.el")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Show paren mode, built-in from Emacs 24.x
@@ -152,9 +140,8 @@
 (global-set-key (kbd "<XF86MyComputer>") 'magit-status)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Emacs grep and find
+;; Emacs open grep and find
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(global-set-key "\C-x\C-f" 'find-file)
 (global-set-key "\C-\M-f" 'find-file-at-point)
 (global-set-key "\C-cn" 'find-dired)
 (global-set-key "\C-cN" 'grep-find)
@@ -182,12 +169,18 @@
         "*.xd"
         "TAGS"
         "dependency-reduced-pom.xml"
+        "projectile.cache"
         "workbench.xmi"
         )
        grep-find-ignored-files))
 
 (setq grep-find-command
       "find ~/src/content-engine -name \"*.java\" | xargs grep -n -i -e ")
+
+(use-package ag
+ :init
+ (setq ag-arguments (list "--word-regexp" "--smart-case"))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Prefer UTF 8, but don't override current encoding if specified
@@ -205,8 +198,11 @@
 ;; keeping messy colleagues happy ;-) Important that it doesn't clean
 ;; the whitespace on currrent line, otherwise, eclim leaves messy
 ;; code behind.
-(ws-butler-global-mode)
-(setq ws-butler-keep-whitespace-before-point nil)
+(use-package ws-butler
+  :init
+  (setq ws-butler-keep-whitespace-before-point nil)
+  :config
+  (ws-butler-global-mode))
 
 (defun tkj-indent-and-fix-whitespace()
   (interactive)
@@ -247,13 +243,6 @@
 (defun tkj-insert-down-arrow()
   (interactive)
   (insert "↓"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Emacs package repositories
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq package-archives '(("melpa" . "http://melpa.org/packages/")
-                         ("gnu" . "http://elpa.gnu.org/packages/")
-                         ("marmalade" . "http://marmalade-repo.org/packages/")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Shortcuts available in all modes
@@ -325,6 +314,12 @@
   ("C-=" . 'er/expand-region))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ivy, counsel and swiper. Mostly minibuffer and navigation
+;; enhancements.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(load "~/.emacs.d/tkj-ivy.el")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Buffers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Make C-x C-b maximise the buffer list window, this saves two
@@ -384,7 +379,6 @@
 ;; Auto complete
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-company-mode 1)
-(company-quickhelp-mode 1)
 (global-set-key (kbd "<C-return>") 'company-complete)
 (use-package company-emoji)
 (add-to-list 'company-backends 'company-emoji)
@@ -424,8 +418,8 @@
          ("\\.ini\\'" . conf-mode)
          ("\\.java$" . java-mode)
          ("\\.jbk\\'" . nxml-mode)
-         ("\\.js$" . js2-mode)
-         ("\\.json$" . js2-mode)
+         ("\\.js$" . js-mode)
+         ("\\.json$" . json-mode)
          ("\\.jsp$" . nxml-mode) ;; nxml-mode
          ("\\.jspf$" . nxml-mode) ;; nxml-mode
          ("\\.less\\'" . javascript-mode)
@@ -484,18 +478,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Yasnippets
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun tkj-load-yas()
-  (interactive)
+(use-package yasnippet
+  :init
+  (setq yas/root-directory '("~/.emacs.d/snippets"))
+
+  :config
   (autoload 'yas/expand "yasnippet" t)
   (autoload 'yas/load-directory "yasnippet" t)
-  (setq yas/root-directory '("~/.emacs.d/snippets"))
   (mapc 'yas/load-directory yas/root-directory)
-  (global-set-key "\C-c\C-i" 'yas/expand)
-  (global-unset-key "\C-]")
-  (global-set-key "\C-\]" 'yas-exit-all-snippets)
   (yas-global-mode 1))
-
-(tkj-load-yas)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Java
@@ -633,6 +624,15 @@
 ;; BASH settings
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (load "~/.emacs.d/tkj-sh.el")
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Interpret shell escapes
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun display-ansi-colors ()
+  (interactive)
+  (let ((inhibit-read-only t))
+    (ansi-color-apply-on-region (point-min) (point-max))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Put all Emacs customize variables & faces in its own file

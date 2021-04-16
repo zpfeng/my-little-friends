@@ -1,5 +1,11 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! emacs
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 Emacs*useXIM: false
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! urxvt
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 Mono:bold:pixelsize=12:antialias=false:hinting=true
 URxvt*scrollBar: false
 URxvt.matcher.button:   1
@@ -7,7 +13,7 @@ URxvt.perl-ext-common:  default,matcher,keyboard-select
 URxvt.perl-ext:         clipboard
 URxvt.perl-lib:         /home/torstein/.urxvt/perl
 URxvt.underlineURLs:    true
-URxvt.url-launcher:     /usr/bin/firefox
+URxvt.url-launcher:     /home/torstein/bin/firefox
 URxvt.keysym.M-Escape:  perl:keyboard-select:activate
 URxvt.fading:           30
 !! With these two magic settings, Ctrl+Shift does not mess up my work
@@ -23,3 +29,25 @@ URxvt.font:           termfont
 URxvt.boldFont:       termfont
 URxvt.italicFont:     termfont
 URxvt.boldItalicFont: termfont
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! xterm & uxterm
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!! Always UTF-8, no need to use the uxterm wrapper
+XTerm*utf8: 1
+
+!! Make Alt behave as the meta key in xterm
+XTerm*metaSendsEscape: true
+
+!! Put whatever I select with the mouse on the clipboard
+XTerm*selectToClipboard: true
+
+!! Double click selects hyphenated words and URLs
+XTerm*charClass: 0-32:1,33-126:2,127-160:3,161-255:2
+
+!! Colors
+XTerm*pointerColor: red
+XTerm*cursorColor: red
+
+!! check out https://wiki.archlinux.org/index.php/Xterm#Configuration
